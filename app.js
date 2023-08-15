@@ -7,13 +7,14 @@ const rateLimit = require('express-rate-limit');
 const helmet = require('helmet');
 const { errors } = require('celebrate');
 const { requestLogger, errorLogger } = require('./middlewares/logger');
-const { PORT, MONGO_DB } = require('./utils/constants');
+const { PORT, MONGO_DB } = require('./utils/config');
 const centralError = require('./middlewares/centralError');
 const routes = require('./routes');
 
 const app = express();
-app.use(cors());
 
+app.use(cors());
+app.use(requestLogger);
 mongoose.connect(MONGO_DB, { family: 4 });
 
 const limiter = rateLimit({
@@ -25,7 +26,6 @@ const limiter = rateLimit({
 app.use(limiter);
 app.use(helmet());
 app.use(bodyParser.json());
-app.use(requestLogger);
 
 app.use(routes);
 

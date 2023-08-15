@@ -3,10 +3,11 @@ const NotFound = require('../errors/notFound');
 const Forbidden = require('../errors/forbidden');
 const BadRequest = require('../errors/badRequest');
 
-const getMovies = (req, res) => {
-  Movie.find({})
-    .then((movie) => { res.send(movie); })
-    .catch(() => {});
+const getMovies = (req, res, next) => {
+  const owner = req.user._id;
+  Movie.find({ owner })
+    .then((movies) => res.send(movies))
+    .catch(next);
 };
 
 const createMovie = (req, res, next) => {

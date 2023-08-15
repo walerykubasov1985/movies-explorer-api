@@ -1,15 +1,15 @@
-require('dotenv').config();
-
-const { NODE_ENV, JWT_SECRET } = process.env;
-
-const {
-  PORT = 3000,
-  MONGO_DB = 'mongodb://127.0.0.1:27017/moviesdb',
-} = process.env;
+const ERROR_BAD_REQUEST = 400;
+const ERROR_AUTH = 401;
+const ERROR_FORBIDDEN = 403;
+const ERROR_NOT_FOUND = 404;
+const ERROR_CONFLICT = 409;
+const ERROR_DEFAULT = 500;
 
 module.exports = {
-  NODE_ENV,
-  JWT_SECRET,
-  PORT,
-  MONGO_DB,
+  ERROR_BAD_REQUEST,
+  ERROR_NOT_FOUND,
+  ERROR_DEFAULT,
+  ERROR_AUTH,
+  ERROR_FORBIDDEN,
+  ERROR_CONFLICT,
 };

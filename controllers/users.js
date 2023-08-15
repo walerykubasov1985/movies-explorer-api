@@ -1,7 +1,7 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/user');
-const { NODE_ENV, JWT_SECRET } = require('../utils/constants');
+const { NODE_ENV, JWT_SECRET } = require('../utils/config');
 const NotFound = require('../errors/notFound');
 const BadRequest = require('../errors/badRequest');
 const ConnflictRequest = require('../errors/conflictRequst');
@@ -24,6 +24,22 @@ const getUserInfo = (req, res, next) => {
     });
 };
 
+// Проверка входа в приложение
+const login = (req, res, next) => {
+  const { email, password } = req.body;
+  if (!email || !password) next(new BadRequest('Email или пароль не могут быть пустыми'));
+  return User.findUserByCredentials(email, password)
+    .then((user) => {
+      const token = jwt.sign(
+        { _id: user._id },
+        NODE_ENV === 'production' ? JWT_SECRET : 'dev-secret',
+        { expiresIn: '7d' },
+      );
+      res.send({ token });
+    })
+    .catch(next);
+};
+
 // создание пользователя
 const createUser = (req, res, next) => {
   const { email, password, name } = req.body;
@@ -39,7 +55,7 @@ const createUser = (req, res, next) => {
     })
     .catch((err) => {
       if (err.code === 11000) {
-        next(console.log(new ConnflictRequest(`Пользователь '${email}' уже существует`)));
+        next(new ConnflictRequest(`Пользователь '${email}' уже существует`));
       } else if (err.name === 'ValidationError') {
         next(new BadRequest('Данные введены некорректно'));
       } else {
@@ -62,26 +78,12 @@ const updateUser = (req, res, next) => {
     .catch((err) => {
       if (err.name === 'ValidationError') {
         next(new BadRequest('Данные введены некорректно'));
+      } else if (err.code === 11000) {
+        next(new ConnflictRequest(`Пользователь '${email}' уже существует`));
       } else {
         next(err);
       }
     });
-};
-
-// Проверка входа в приложение
-const login = (req, res, next) => {
-  const { email, password } = req.body;
-  if (!email || !password) next(new BadRequest('Email или пароль не могут быть пустыми'));
-  return User.findUserByCredentials(email, password)
-    .then((user) => {
-      const token = jwt.sign(
-        { _id: user._id },
-        NODE_ENV === 'production' ? JWT_SECRET : 'dev-secret',
-        { expiresIn: '7d' },
-      );
-      res.send({ token });
-    })
-    .catch(next);
 };
 
 module.exports = {
